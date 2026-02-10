@@ -7,6 +7,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends wget apt-transp
     wget -qO - https://packages.adoptium.net/artifactory/api/gpg/key/public | gpg --dearmor -o /etc/apt/keyrings/adoptium.gpg && \
     echo "deb [signed-by=/etc/apt/keyrings/adoptium.gpg] https://packages.adoptium.net/artifactory/deb bookworm main" > /etc/apt/sources.list.d/adoptium.list && \
     apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates \
+    ca-certificates-java \
+    && update-ca-certificates \
     temurin-21-jre \
     ffmpeg \
     dumb-init \
