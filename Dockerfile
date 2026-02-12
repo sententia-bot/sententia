@@ -15,6 +15,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends wget apt-transp
     dumb-init \
     curl \
     git \
+    vim \
     python3 \
     python3-pip \
     && rm -rf /var/lib/apt/lists/*
