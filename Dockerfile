@@ -48,7 +48,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Install Playwright and Chromium as node user
 USER node
 WORKDIR /home/node
-RUN npm install playwright && npx playwright install chromium
+# RUN npm install playwright && npx playwright install chromium
 
 USER node
 WORKDIR /home/node
