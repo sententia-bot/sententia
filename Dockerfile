@@ -20,6 +20,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends wget apt-transp
     #&& update-ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
+# Install Rust toolchain
+ENV RUSTUP_HOME=/usr/local/rustup \
+    CARGO_HOME=/usr/local/cargo \
+    PATH=/usr/local/cargo/bin:$PATH
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | \
+    sh -s -- -y --no-modify-path --default-toolchain stable && \
+    chmod -R a+w /usr/local/rustup /usr/local/cargo
+
 # Install kubectl for read-only cluster access
 RUN curl -fsSL "https://dl.k8s.io/release/$(curl -fsSL https://dl.k8s.io/release/stable.txt)/bin/linux/$(dpkg --print-architecture)/kubectl" \
     -o /usr/local/bin/kubectl && chmod +x /usr/local/bin/kubectl
