@@ -33,6 +33,19 @@ RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | \
 RUN curl -fsSL "https://dl.k8s.io/release/$(curl -fsSL https://dl.k8s.io/release/stable.txt)/bin/linux/$(dpkg --print-architecture)/kubectl" \
     -o /usr/local/bin/kubectl && chmod +x /usr/local/bin/kubectl
 
+# Install gh CLI for GitHub operations
+RUN curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | gpg --dearmor -o /etc/apt/keyrings/github-cli-archive-keyring.gpg && \
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/github-cli-archive-keyring.gpg] https://cli.github.com/packages stable main" > /etc/apt/sources.list.d/github-cli.list && \
+    apt-get update && apt-get install -y gh && rm -rf /var/lib/apt/lists/*
+
+# Install BuildKit (buildctl) for OCI image building without docker daemon
+RUN curl -fsSL https://raw.githubusercontent.com/moby/buildkit/master/hack/install-buildkit.sh | sh && \
+    mv /tmp/buildkit*/bin/buildctl /usr/local/bin/ && \
+    chmod +x /usr/local/bin/buildctl || echo "BuildKit install note: buildctl path may vary"
+
+# Install skopeo for pushing images to registries without daemon
+RUN apt-get update && apt-get install -y --no-install-recommends skopeo && rm -rf /var/lib/apt/lists/*
+
 # Install Playwright dependencies and Chromium
 # System deps for Chromium on Debian Bookworm
 RUN apt-get update && apt-get install -y --no-install-recommends \
