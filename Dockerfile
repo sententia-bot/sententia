@@ -38,15 +38,16 @@ RUN curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | g
     echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/github-cli-archive-keyring.gpg] https://cli.github.com/packages stable main" > /etc/apt/sources.list.d/github-cli.list && \
     apt-get update && apt-get install -y gh && rm -rf /var/lib/apt/lists/*
 
-# Install docker buildx for multi-platform image builds (cross-compile support)
-RUN mkdir -p /usr/libexec/docker/cli-plugins && \
+# Install Docker client and buildx for building/pushing container images
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    docker.io \
+    skopeo && \
+    rm -rf /var/lib/apt/lists/* && \
+    mkdir -p /usr/libexec/docker/cli-plugins && \
     ARCH=$(dpkg --print-architecture) && \
     curl -fsSL "https://github.com/docker/buildx/releases/download/v0.14.1/buildx-v0.14.1.linux-${ARCH}" \
     -o /usr/libexec/docker/cli-plugins/docker-buildx && \
     chmod +x /usr/libexec/docker/cli-plugins/docker-buildx
-
-# Install skopeo for pushing images to registries
-RUN apt-get update && apt-get install -y --no-install-recommends skopeo && rm -rf /var/lib/apt/lists/*
 
 # Install Playwright dependencies and Chromium
 # System deps for Chromium on Debian Bookworm
