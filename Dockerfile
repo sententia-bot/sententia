@@ -38,12 +38,14 @@ RUN curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | g
     echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/github-cli-archive-keyring.gpg] https://cli.github.com/packages stable main" > /etc/apt/sources.list.d/github-cli.list && \
     apt-get update && apt-get install -y gh && rm -rf /var/lib/apt/lists/*
 
-# Install BuildKit (buildctl) for OCI image building without docker daemon
-RUN curl -fsSL https://raw.githubusercontent.com/moby/buildkit/master/hack/install-buildkit.sh | sh && \
-    mv /tmp/buildkit*/bin/buildctl /usr/local/bin/ && \
-    chmod +x /usr/local/bin/buildctl || echo "BuildKit install note: buildctl path may vary"
+# Install docker buildx for multi-platform image builds (cross-compile support)
+RUN mkdir -p /usr/libexec/docker/cli-plugins && \
+    ARCH=$(dpkg --print-architecture) && \
+    curl -fsSL "https://github.com/docker/buildx/releases/download/v0.14.1/buildx-v0.14.1.linux-${ARCH}" \
+    -o /usr/libexec/docker/cli-plugins/docker-buildx && \
+    chmod +x /usr/libexec/docker/cli-plugins/docker-buildx
 
-# Install skopeo for pushing images to registries without daemon
+# Install skopeo for pushing images to registries
 RUN apt-get update && apt-get install -y --no-install-recommends skopeo && rm -rf /var/lib/apt/lists/*
 
 # Install Playwright dependencies and Chromium
