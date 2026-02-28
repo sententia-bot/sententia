@@ -1,4 +1,5 @@
-FROM ghcr.io/openclaw/openclaw:latest
+ARG OPENCLAW_TAG=latest
+FROM ghcr.io/openclaw/openclaw:${OPENCLAW_TAG}
 
 USER root
 

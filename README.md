@@ -18,3 +18,6 @@ docker push ghcr.io/albindalbert/sententia:latest
 docker buildx build --platform linux/arm64 -t ghcr.io/albindalbert/sententia:latest --push .
 ```
 
+sudo docker build --pull -t ghcr.io/albindalbert/sententia:latest .
+sudo docker save ghcr.io/albindalbert/sententia:latest -o sententia.tar
+sudo ctr -n=k8s.io images import sententia.tar
