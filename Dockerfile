@@ -3,54 +3,18 @@ FROM ghcr.io/openclaw/openclaw:${OPENCLAW_TAG}
 
 USER root
 
-# Adoptium Temurin repo for JRE 21
-RUN apt-get update && apt-get install -y --no-install-recommends wget apt-transport-https gnupg && \
-    wget -qO - https://packages.adoptium.net/artifactory/api/gpg/key/public | gpg --dearmor -o /etc/apt/keyrings/adoptium.gpg && \
-    echo "deb [signed-by=/etc/apt/keyrings/adoptium.gpg] https://packages.adoptium.net/artifactory/deb bookworm main" > /etc/apt/sources.list.d/adoptium.list && \
-    apt-get update && apt-get install -y --no-install-recommends \
-    #ca-certificates \
-    #ca-certificates-java \
-    temurin-21-jre \
-    ffmpeg \
-    dumb-init \
-    curl \
-    git \
-    vim \
-    python3 \
-    python3-pip \
-    #&& update-ca-certificates \
-    && rm -rf /var/lib/apt/lists/*
-
-# Install Rust toolchain
-ENV RUSTUP_HOME=/usr/local/rustup \
-    CARGO_HOME=/usr/local/cargo \
-    PATH=/usr/local/cargo/bin:$PATH
-RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | \
-    sh -s -- -y --no-modify-path --default-toolchain stable && \
-    chmod -R a+w /usr/local/rustup /usr/local/cargo
-
-# Install kubectl for read-only cluster access
-RUN curl -fsSL "https://dl.k8s.io/release/$(curl -fsSL https://dl.k8s.io/release/stable.txt)/bin/linux/$(dpkg --print-architecture)/kubectl" \
-    -o /usr/local/bin/kubectl && chmod +x /usr/local/bin/kubectl
-
-# Install gh CLI for GitHub operations
-RUN curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | gpg --dearmor -o /etc/apt/keyrings/github-cli-archive-keyring.gpg && \
-    echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/github-cli-archive-keyring.gpg] https://cli.github.com/packages stable main" > /etc/apt/sources.list.d/github-cli.list && \
-    apt-get update && apt-get install -y gh && rm -rf /var/lib/apt/lists/*
-
-# Install docker buildx for multi-platform image builds (cross-compile support)
-RUN mkdir -p /usr/libexec/docker/cli-plugins && \
-    ARCH=$(dpkg --print-architecture) && \
-    curl -fsSL "https://github.com/docker/buildx/releases/download/v0.14.1/buildx-v0.14.1.linux-${ARCH}" \
-    -o /usr/libexec/docker/cli-plugins/docker-buildx && \
-    chmod +x /usr/libexec/docker/cli-plugins/docker-buildx
-
-# Install skopeo for pushing images to registries
-RUN apt-get update && apt-get install -y --no-install-recommends skopeo && rm -rf /var/lib/apt/lists/*
-
-# Install Playwright dependencies and Chromium
-# System deps for Chromium on Debian Bookworm
+# Base system deps — only what's needed at container start or requires root/apt:
+# - dumb-init: entrypoint init
+# - ca-certificates, curl, wget, gnupg: bootstrap for secure fetches
+# - temurin-21-jre: system JRE (apt-managed, root-required)
+# - Playwright shared system libs: browser automation deps (apt-level, shared libs)
 RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates \
+    curl \
+    wget \
+    gnupg \
+    apt-transport-https \
+    dumb-init \
     libnss3 \
     libnspr4 \
     libatk1.0-0 \
@@ -67,15 +31,20 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libpango-1.0-0 \
     libcairo2 \
     libatspi2.0-0 \
+    && mkdir -p /etc/apt/keyrings \
+    && wget -qO - https://packages.adoptium.net/artifactory/api/gpg/key/public \
+      | gpg --dearmor -o /etc/apt/keyrings/adoptium.gpg \
+    && echo "deb [signed-by=/etc/apt/keyrings/adoptium.gpg] https://packages.adoptium.net/artifactory/deb bookworm main" \
+      > /etc/apt/sources.list.d/adoptium.list \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends temurin-21-jre \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Playwright and Chromium as node user
 USER node
 WORKDIR /home/node
-# RUN npm install playwright && npx playwright install chromium
 
-USER node
-WORKDIR /home/node
+# Userland tools (kubectl, gh, rust, docker cli, nerdctl, ffmpeg) are installed
+# on first run via scripts/install-runtime-tools.sh — persisted by PVC-backed $HOME.
 
 ENTRYPOINT ["/usr/bin/dumb-init", "--"]
 CMD ["node", "/app/openclaw.mjs", "gateway", "--bind", "0.0.0.0"]
