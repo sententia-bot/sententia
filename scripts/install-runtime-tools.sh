@@ -83,10 +83,10 @@ install_docker() {
   if need_cmd docker; then
     echo "docker: already installed ($(docker --version))"
   else
-    echo "Installing Docker CLI..."
-    local tag ver docker_arch tgz tmpdir
-    tag="$(latest_gh_tag docker/cli)"
-    ver="${tag#v}"
+    echo "Installing Docker CLI (static)..."
+    local ver docker_arch tgz tmpdir
+    # Docker static binaries use a specific version format; fetch latest from download.docker.com
+    ver="$(curl -fsSL https://download.docker.com/linux/static/stable/aarch64/ | grep -oP 'docker-[\d.]+\.tgz' | sort -V | tail -n1 | sed 's/docker-//;s/\.tgz//')"
     case "$ARCH" in
       amd64) docker_arch="x86_64" ;;
       arm64) docker_arch="aarch64" ;;
