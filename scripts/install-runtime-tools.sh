@@ -24,8 +24,11 @@ need_cmd() { command -v "$1" >/dev/null 2>&1; }
 download() { curl -fsSL "$1" -o "$2"; }
 
 latest_gh_tag() {
-  curl -fsSL "https://api.github.com/repos/$1/releases/latest" \
-    | grep -m1 '"tag_name"' | sed -E 's/.*"([^"]+)".*/\1/'
+  local tmp
+  tmp="$(mktemp)"
+  curl -fsSL "https://api.github.com/repos/$1/releases/latest" -o "$tmp"
+  grep -m1 '"tag_name"' "$tmp" | sed -E 's/.*"([^"]+)".*/\1/'
+  rm -f "$tmp"
 }
 
 # --- kubectl ---
