@@ -28,6 +28,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libxrandr2 \
     libgbm1 \
     libasound2 \
+    ffmpeg \
     libpango-1.0-0 \
     libcairo2 \
     libatspi2.0-0 \
@@ -43,7 +44,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 USER node
 WORKDIR /home/node
 
-# Userland tools (kubectl, gh, rust, docker cli, nerdctl, ffmpeg) are installed
+# Userland tools (kubectl, gh, rust, docker cli, nerdctl) are installed
 # on first run via scripts/install-runtime-tools.sh — persisted by PVC-backed $HOME.
 
 ENTRYPOINT ["/usr/bin/dumb-init", "--"]
