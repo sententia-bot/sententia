@@ -29,6 +29,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libgbm1 \
     libasound2 \
     ffmpeg \
+    python3-pip \
+    python3-venv \
     libpango-1.0-0 \
     libcairo2 \
     libatspi2.0-0 \
