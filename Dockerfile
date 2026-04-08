@@ -15,6 +15,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     gnupg \
     apt-transport-https \
     dumb-init \
+    tzdata \
     libnss3 \
     libnspr4 \
     libatk1.0-0 \
@@ -41,6 +42,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
       > /etc/apt/sources.list.d/adoptium.list \
     && apt-get update \
     && apt-get install -y --no-install-recommends temurin-21-jre \
+    && ln -sf /usr/share/zoneinfo/Europe/Stockholm /etc/localtime \
+    && echo "Europe/Stockholm" > /etc/timezone \
     && rm -rf /var/lib/apt/lists/*
 
 USER node
